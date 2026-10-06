@@ -1,26 +1,211 @@
 @import "tailwindcss";
 
+/* 배민 스타일 테마 (라이트모드 전용)
+   액센트/플레이스홀더는 흰 배경 대비 3:1 이상이 되도록 가이드 값보다 어둡게 조정 */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --bg: #f5f5f5;
+  --card: #ffffff;
+  --text: #1e1e1e;
+  --text-sub: #888888;
+  --placeholder: #949494;
+  --border: #eeeeee;
+  --accent: #1c9a95;
+  --accent-hover: #178c88;
+  --accent-brand: #2ac1bc;
+  --hover-bg: #e9f9f8;
+  --hover-bg-strong: #d5f3f1;
+  --overlay: rgba(0, 0, 0, 0.4);
+  --point: #ffd600;
+  --error: #f04452;
+  --error-hover: #d93a47;
+  --error-bg: #feeef0;
+  /* 카카오 로그인 버튼 (카카오 디자인 가이드 색상) */
+  --kakao-bg: #fee500;
+  --kakao-bg-hover: #f5dc00;
+  --kakao-text: rgba(0, 0, 0, 0.85);
+  --shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic",
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+@layer components {
+  .btn-primary {
+    background: var(--accent);
+    color: #ffffff;
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+  }
+  .btn-primary:active {
+    transform: scale(0.97);
+  }
+  .btn-primary:disabled {
+    background: var(--border);
+    color: var(--text-sub);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    background: var(--hover-bg);
+    color: var(--accent);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .btn-secondary:hover {
+    background: var(--hover-bg-strong);
+    color: var(--accent-hover);
+  }
+  .btn-secondary:active {
+    transform: scale(0.97);
+  }
+
+  .btn-danger {
+    background: var(--error);
+    color: #ffffff;
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .btn-danger:hover {
+    background: var(--error-hover);
+  }
+  .btn-danger:active {
+    transform: scale(0.97);
+  }
+
+  .btn-primary:focus-visible,
+  .btn-secondary:focus-visible,
+  .btn-danger:focus-visible,
+  .sidebar-row-action:focus-visible {
+    outline: 2px solid var(--accent-brand);
+    outline-offset: 2px;
+  }
+
+  /* 사이드바 항목에 마우스를 올리거나 키보드로 포커스했을 때만 우측 액션 버튼 노출 */
+  .sidebar-row-action {
+    opacity: 0;
+    color: var(--text-sub);
+    transition:
+      opacity 0.2s ease,
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .sidebar-row:hover .sidebar-row-action,
+  .sidebar-row:focus-within .sidebar-row-action {
+    opacity: 1;
+  }
+  .sidebar-row-action:hover {
+    background: var(--hover-bg-strong);
+    color: var(--accent-hover);
+  }
+  .sidebar-row-action.is-danger:hover {
+    background: var(--error-bg);
+    color: var(--error);
+  }
+  /* 마우스 호버가 없는 터치 기기에서는 항상 노출 */
+  @media (hover: none) {
+    .sidebar-row-action {
+      opacity: 1;
+    }
+  }
+
+  .btn-kakao {
+    background: var(--kakao-bg);
+    color: var(--kakao-text);
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .btn-kakao:hover {
+    background: var(--kakao-bg-hover);
+  }
+  .btn-kakao:active {
+    transform: scale(0.97);
+  }
+  .btn-kakao:disabled {
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn-kakao:focus-visible {
+    outline: 2px solid var(--accent-brand);
+    outline-offset: 2px;
+  }
+
+  .text-link {
+    color: var(--accent);
+    font-weight: 700;
+    transition: opacity 0.2s ease;
+  }
+  .text-link:hover {
+    opacity: 0.8;
+  }
+  .text-link:focus-visible {
+    outline: 2px solid var(--accent-brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .toast {
+    animation: toast-in 0.2s ease;
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+
+  .modal::backdrop {
+    background: var(--overlay);
+  }
+
+  .card-hover {
+    box-shadow: var(--shadow);
+    transition:
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+  .card-hover:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  .nav-item {
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .nav-item:hover {
+    background: var(--hover-bg);
+    color: var(--accent);
+  }
+
+  .text-input {
+    transition: border-color 0.2s ease;
+  }
+  .text-input::placeholder {
+    color: var(--placeholder);
+  }
+  .text-input:focus {
+    border-color: var(--accent-brand);
+    outline: none;
+  }
+  .text-input[aria-invalid="true"] {
+    border-color: var(--error);
+  }
 }

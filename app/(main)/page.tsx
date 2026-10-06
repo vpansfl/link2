@@ -1,69 +1,40 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import AppShell from "@/app/_components/app-shell";
+import FolderView from "@/app/_components/folder-view";
+import { fetchFolderName } from "@/app/_lib/db";
+import { pageMetadata } from "@/app/_lib/metadata";
+import { createClient } from "@/utils/supabase/server";
 
-export default function Home() {
+function getFolderId(folder: string | string[] | undefined): string | undefined {
+  return typeof folder === "string" ? folder : undefined;
+}
+
+// 전체 보기는 사이트 기본 제목·설명, 폴더별 보기(?folder=)는 "폴더 이름 | 링크"로 표시
+// 폴더별 보기는 전체 목록을 걸러 보는 화면이라(중복 콘텐츠) 검색 결과에서 제외
+export async function generateMetadata({ searchParams }: PageProps<"/">): Promise<Metadata> {
+  const folderId = getFolderId((await searchParams).folder);
+  if (!folderId) return {};
+
+  const supabase = createClient(await cookies());
+  const { data } = await supabase.auth.getClaims();
+  const name = await fetchFolderName(supabase, data?.claims.sub ?? null, folderId);
+  if (!name) return {};
+
+  return pageMetadata({
+    title: name,
+    description: `링크의 '${name}' 폴더에 저장된 북마크 모음`,
+    path: `/?folder=${folderId}`,
+    noindex: true,
+  });
+}
+
+export default async function Home({ searchParams }: PageProps<"/">) {
+  const folderId = getFolderId((await searchParams).folder);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <AppShell activeFolderId={folderId}>
+      <FolderView folderId={folderId} />
+    </AppShell>
   );
 }
